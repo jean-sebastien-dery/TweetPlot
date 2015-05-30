@@ -4,7 +4,7 @@ Created on May 21, 2015
 @author: jsdery
 '''
 
-from tweetscan.twitter_account import TwitterAccount 
+from tweetplot.twitter_account import TwitterAccount 
 import logging
 
 if __name__ == '__main__':

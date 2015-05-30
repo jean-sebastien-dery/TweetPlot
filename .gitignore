@@ -1,1 +1,3 @@
+*.pyc
 scripts/twitterAuthInformation.ini
+scripts/tweetplot/__pycache__
