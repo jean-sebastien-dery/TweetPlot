@@ -9,20 +9,36 @@ import ConfigParser
 import os.path
 
 class TwitterAuthParams(object):
+    """
+    Container for the Twitter authentication parameters.
+    """
     
-    _CONFIG_SECTION_NAME = "TweetPlot.Auth"
-    _CONSUMER_KEY_VAR_NAME = "consumer_key"
-    _CONSUMER_SECRET_VAR_NAME = "consumer_secret"
-    _ACCESS_TOKEN_KEY_VAR_NAME = "access_token_key"
-    _ACCESS_TOKEN_SECRET_VAR_NAME = "access_token_secret"
+    __CONFIG_SECTION_NAME = "TweetPlot.Auth"
+    __CONSUMER_KEY_VAR_NAME = "consumer_key"
+    __CONSUMER_SECRET_VAR_NAME = "consumer_secret"
+    __ACCESS_TOKEN_KEY_VAR_NAME = "access_token_key"
+    __ACCESS_TOKEN_SECRET_VAR_NAME = "access_token_secret"
     
     def __init__(self, config_file_name):
-        self._getAuthParamsFromConfig(config_file_name=config_file_name)
+        """
+        Creates a new instance of TwitterAuthParams.
         
-        if self._areAuthParamsMissing():
-            raise ValueError("At least one authentication parameter from the config file is missing.", self._CONSUMER_KEY_VAR_NAME+"="+self._consumer_key, self._CONSUMER_SECRET_VAR_NAME+"="+self._consumer_secret, self._ACCESS_TOKEN_KEY_VAR_NAME+"="+self._access_token_key, self._ACCESS_TOKEN_SECRET_VAR_NAME+"="+self._access_token_secret)
+        Args:
+            config_file_name (str): The name of the config file containing the auth parameters.
+        """
         
-    def _getAuthParamsFromConfig(self, config_file_name):
+        self.__getAuthParamsFromConfig(config_file_name=config_file_name)
+        
+        if self.__areAuthParamsMissing():
+            raise ValueError("At least one authentication parameter from the config file is missing.", self.__CONSUMER_KEY_VAR_NAME+"="+self._consumer_key, self.__CONSUMER_SECRET_VAR_NAME+"="+self._consumer_secret, self.__ACCESS_TOKEN_KEY_VAR_NAME+"="+self._access_token_key, self.__ACCESS_TOKEN_SECRET_VAR_NAME+"="+self._access_token_secret)
+        
+    def __getAuthParamsFromConfig(self, config_file_name):
+        """
+        Reads from the specified config file name the Twitter authentication parameters.
+        
+        Params:
+            config_file_name (str): The name of the config file containing the auth parameters.
+        """
         self._configFile = ConfigParser.ConfigParser()
         
         if (not os.path.isfile(config_file_name)):
@@ -30,28 +46,45 @@ class TwitterAuthParams(object):
         
         self._configFile.read(config_file_name)
         
-        self._consumer_key = self._configFile.get(self._CONFIG_SECTION_NAME, self._CONSUMER_KEY_VAR_NAME)
-        self._consumer_secret = self._configFile.get(self._CONFIG_SECTION_NAME, self._CONSUMER_SECRET_VAR_NAME)
-        self._access_token_key = self._configFile.get(self._CONFIG_SECTION_NAME, self._ACCESS_TOKEN_KEY_VAR_NAME)
-        self._access_token_secret = self._configFile.get(self._CONFIG_SECTION_NAME, self._ACCESS_TOKEN_SECRET_VAR_NAME)
-        return;
+        self._consumer_key = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__CONSUMER_KEY_VAR_NAME)
+        self._consumer_secret = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__CONSUMER_SECRET_VAR_NAME)
+        self._access_token_key = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__ACCESS_TOKEN_KEY_VAR_NAME)
+        self._access_token_secret = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__ACCESS_TOKEN_SECRET_VAR_NAME)
     
-    def _areAuthParamsMissing(self):
+    def __areAuthParamsMissing(self):
+        """
+        Validates if any parameter is missing.
+        
+        Returns:
+            True if there is at least one parameter missing, and False otherwise.
+        """
         if (not self._consumer_key) or (not self._consumer_secret) or (not self._access_token_key) or (not self._access_token_secret):
             return True
         else:
             return False
         
     def getConsumerKey(self):
+        """
+        Returns the Consumer Key value.
+        """
         return self._consumer_key
     
     def getConsumerSecret(self):
+        """
+        Returns the Consumer Secret value.
+        """
         return self._consumer_secret
     
     def getAccessTokenKey(self):
+        """
+        Returns the Access Token Key value.
+        """
         return self._access_token_key
     
     def getAccessTokenSecret(self):
+        """
+        Returns the Access Token Secret value.
+        """
         return self._access_token_secret
 
 class TwitterAccount(object):
