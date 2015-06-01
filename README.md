@@ -1,4 +1,6 @@
-# veni-vidi-tweeti
+# Tweet Plot
+
+Using pep8 for style check
 
 Using the https://github.com/bear/python-twitter project to access the Twitter API
 

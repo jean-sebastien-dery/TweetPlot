@@ -8,6 +8,7 @@ import tweepy
 import ConfigParser
 import os.path
 
+
 class TwitterAuthParams(object):
     """
     Container for the Twitter authentication parameters.
@@ -89,26 +90,26 @@ class TwitterAuthParams(object):
 
 class TwitterAccount(object):
     '''
-    classdocs
+    Represents an authenticated Twitter account.
     '''
     
     def __init__(self, twitter_auth_params):
         '''
         Constructor
-        '''        
+        '''
         auth = tweepy.OAuthHandler(twitter_auth_params.getConsumerKey(), twitter_auth_params.getConsumerSecret())
         auth.secure = True
         auth.set_access_token(twitter_auth_params.getAccessTokenKey(), twitter_auth_params.getAccessTokenSecret())
-        self._twitterApi = tweepy.API(auth)
+        self.__twitterApi = tweepy.API(auth)
     
     def getAuthenticatedUserId(self):
-        return self._twitterApi.me().id
+        return self.__twitterApi.me().id
         
     def getListOfFriendsFromId(self, user_id):
         friends_ids_list = []
         
-        for friend_id in tweepy.Cursor(self._twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
-            print("Adding '"+str(friend_id)+"' to the list of friends")
+        for friend_id in tweepy.Cursor(self.__twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
+            # print("Adding '"+str(friend_id)+"' to the list of friends")
             friends_ids_list.append(friend_id)
             
         return friends_ids_list
