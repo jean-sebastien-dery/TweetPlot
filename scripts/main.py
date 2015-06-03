@@ -24,11 +24,17 @@ if __name__ == '__main__':
 
         print("There are '"+str(len(neighbors_list))+"' direct neighbors that were collected from user ID '"+str(auth_user_id)+"'.")
         print("Creating the adjacency list of the graph")
+        
+        adj_list_file = open('adjacency_list.dat', 'w+')
 
         for neighbor_id in neighbors_list:
             print("Current neighbor_id ID '"+str(neighbor_id)+"'")
 
             neighbors_of_neighbor = twitter_account.getListOfFriendsFromId(user_id=neighbor_id)
+            
+            adjacency_list = str(auth_user_id) + "=" + (",".join(str(neighbor) for neighbor in neighbors_of_neighbor)) + "\n"
+            print(adjacency_list)
+            adj_list_file.write(adjacency_list)
 
             print("There are '"+str(len(neighbors_of_neighbor))+"' neighbors of neighbors that were added to the adjacency list.")
     except Exception as exception:

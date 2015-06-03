@@ -1,3 +1,4 @@
+*.dat
 *.ini~
 *.pyc
 scripts/twitterAuthInformation.ini
