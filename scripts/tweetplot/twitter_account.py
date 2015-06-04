@@ -4,8 +4,12 @@ Created on May 21, 2015
 @author: Jean-Sebastien Dery
 """
 
-import tweepy
-import ConfigParser
+from tweepy import OAuthHandler
+from tweepy import Cursor
+from tweepy import API
+#from graph_tool import Graph
+from graph_tool.all import *
+from configparser import ConfigParser
 import os.path
 
 
@@ -40,17 +44,17 @@ class TwitterAuthParams(object):
         Params:
             config_file_name (str): The name of the config file containing the auth parameters.
         """
-        self._configFile = ConfigParser.ConfigParser()
+        self._configFile = ConfigParser()
         
         if (not os.path.isfile(config_file_name)):
             raise ValueError("The authentication config file cannot be found.", "Name of config = "+self._CONFIG_FILE_NAME)
         
         self._configFile.read(config_file_name)
         
-        self._consumer_key = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__CONSUMER_KEY_VAR_NAME)
-        self._consumer_secret = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__CONSUMER_SECRET_VAR_NAME)
-        self._access_token_key = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__ACCESS_TOKEN_KEY_VAR_NAME)
-        self._access_token_secret = self._configFile.get(self.__CONFIG_SECTION_NAME, self.__ACCESS_TOKEN_SECRET_VAR_NAME)
+        self._consumer_key = self._configFile.get(TwitterAuthParams.__CONFIG_SECTION_NAME, TwitterAuthParams.__CONSUMER_KEY_VAR_NAME)
+        self._consumer_secret = self._configFile.get(TwitterAuthParams.__CONFIG_SECTION_NAME, TwitterAuthParams.__CONSUMER_SECRET_VAR_NAME)
+        self._access_token_key = self._configFile.get(TwitterAuthParams.__CONFIG_SECTION_NAME, TwitterAuthParams.__ACCESS_TOKEN_KEY_VAR_NAME)
+        self._access_token_secret = self._configFile.get(TwitterAuthParams.__CONFIG_SECTION_NAME, TwitterAuthParams.__ACCESS_TOKEN_SECRET_VAR_NAME)
     
     def __areAuthParamsMissing(self):
         """
@@ -93,14 +97,16 @@ class TwitterAccount(object):
     Represents an authenticated Twitter account.
     '''
     
+    __MAX_NUMBER_OF_IDS = 100
+    
     def __init__(self, twitter_auth_params):
         '''
         Constructor
         '''
-        auth = tweepy.OAuthHandler(twitter_auth_params.getConsumerKey(), twitter_auth_params.getConsumerSecret())
+        auth = OAuthHandler(twitter_auth_params.getConsumerKey(), twitter_auth_params.getConsumerSecret())
         auth.secure = True
         auth.set_access_token(twitter_auth_params.getAccessTokenKey(), twitter_auth_params.getAccessTokenSecret())
-        self.__twitterApi = tweepy.API(auth)
+        self.__twitterApi = API(auth)
     
     def getAuthenticatedUserId(self):
         return self.__twitterApi.me().id
@@ -108,8 +114,58 @@ class TwitterAccount(object):
     def getListOfFriendsFromId(self, user_id):
         friends_ids_list = []
         
-        for friend_id in tweepy.Cursor(self.__twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
-            # print("Adding '"+str(friend_id)+"' to the list of friends")
+        for friend_id in Cursor(self.__twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
             friends_ids_list.append(friend_id)
             
         return friends_ids_list
+    
+    def convertIdsToScreenName(self, id_list):
+        
+        if len(id_list) > TwitterAccount.__MAX_NUMBER_OF_IDS:
+            raise ValueError("The number of IDs to be converted is more than "+TwitterAccount.__MAX_NUMBER_OF_IDS, "len(list of IDs)="+str(len(id_list)))
+        
+        print("converted!")
+
+class TwitterGraphCreator(object):
+    
+    __ORIG_VERTEX_POS = 0
+    __DEST_VERTEX_LIST = 1
+    __ADJ_LIST_ORIG_DELIMITER = "="
+    __ADJ_LIST_DEST_DELIMITER = ","
+    
+    def __init__(self, adjacency_list):
+#         self.__adjacency_list = adjacency_list
+
+        self.__vertex_dict = {}
+        self.__friends_graph = Graph()
+        
+        for neighbor_list in adjacency_list:
+            print("Adding: "+neighbor_list)
+            
+            orig_vertex = self.__getOrigVertex(neighbor_list)
+            dest_vertex_list = self.__getDestVertexList(neighbor_list)
+            
+            for dest_vertex in dest_vertex_list:
+                self.__addEdge(orig_vertex, dest_vertex)
+
+        graph_draw(self.__friends_graph, vertex_text=self.__friends_graph.vertex_index, vertex_font_size=18, output_size=(200, 200), output="two-nodes.png")
+        
+    def __addEdge(self, orig_vertex, dest_vertex):
+        print("Adding from "+orig_vertex+" to "+dest_vertex)
+        orig_vertex_inst = self.__getVertexInstance(orig_vertex)
+        dest_vertex_inst = self.__getVertexInstance(dest_vertex)
+        self.__friends_graph.add_edge(orig_vertex_inst, dest_vertex_inst)
+        
+    def __getVertexInstance(self, vertex_name):
+        vertex_inst = self.__vertex_dict.get(vertex_name)
+        if vertex_inst is None:
+            vertex_inst = self.__friends_graph.add_vertex()
+            self.__vertex_dict[vertex_name] = vertex_inst
+        return vertex_inst
+        
+    def __getOrigVertex(self, neighbor_list):
+        return neighbor_list.split(sep=TwitterGraphCreator.__ADJ_LIST_ORIG_DELIMITER)[TwitterGraphCreator.__ORIG_VERTEX_POS]
+    
+    def __getDestVertexList(self, neighbor_list):
+        dest_vertices = neighbor_list.split(sep=TwitterGraphCreator.__ADJ_LIST_ORIG_DELIMITER)[TwitterGraphCreator.__DEST_VERTEX_LIST]
+        return dest_vertices.split(sep=TwitterGraphCreator.__ADJ_LIST_DEST_DELIMITER)
