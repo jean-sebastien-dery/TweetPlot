@@ -11,6 +11,7 @@ from tweepy import API
 from graph_tool.all import *
 from configparser import ConfigParser
 import os.path
+from tweepy.error import TweepError
 
 
 class TwitterAuthParams(object):
@@ -98,6 +99,7 @@ class TwitterAccount(object):
     '''
     
     __MAX_NUMBER_OF_IDS = 100
+    __MAX_NUMBER_ERRORS = 5
     
     def __init__(self, twitter_auth_params):
         '''
@@ -113,10 +115,24 @@ class TwitterAccount(object):
         
     def getListOfFriendsFromId(self, user_id):
         friends_ids_list = []
+        error_count = 0
+        sending_requests = True
         
-        for friend_id in Cursor(self.__twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
-            friends_ids_list.append(friend_id)
-            
+        while (sending_requests):
+            try:
+                for friend_id in Cursor(self.__twitterApi.friends_ids, user_id=user_id, monitor_rate_limit=True, wait_on_rate_limit=True).items():
+                    friends_ids_list.append(friend_id)
+                    
+                sending_requests = False
+            except (TweepError, ConnectionResetError) as exception:
+                print("An error occurred while sending the request to Twitter, trying again...")
+                print(exception)
+                error_count += 1
+                
+                if error_count == TwitterAccount.__MAX_NUMBER_ERRORS:
+                    print("It's been "+TwitterAccount.__MAX_NUMBER_ERRORS+" times in a row that we were enable to send requests to Twitter. Raising exception.")
+                    raise exception
+
         return friends_ids_list
     
     def convertIdsToScreenName(self, id_list):
@@ -132,12 +148,14 @@ class TwitterGraphCreator(object):
     __DEST_VERTEX_LIST = 1
     __ADJ_LIST_ORIG_DELIMITER = "="
     __ADJ_LIST_DEST_DELIMITER = ","
+#     __VERTEX_PROPERTY_TYPE = "string"
+#     __VERTEX_PROPERTY_NAME = "screen_name"
     
     def __init__(self, adjacency_list):
-#         self.__adjacency_list = adjacency_list
 
         self.__vertex_dict = {}
         self.__friends_graph = Graph()
+#         self.__vertices_props = self.__friends_graph.new_edge_property(TwitterGraphCreator.__VERTEX_PROPERTY_TYPE)
         
         for neighbor_list in adjacency_list:
             print("Adding: "+neighbor_list)
@@ -147,8 +165,6 @@ class TwitterGraphCreator(object):
             
             for dest_vertex in dest_vertex_list:
                 self.__addEdge(orig_vertex, dest_vertex)
-
-        graph_draw(self.__friends_graph, vertex_text=self.__friends_graph.vertex_index, vertex_font_size=18, output_size=(200, 200), output="two-nodes.png")
         
     def __addEdge(self, orig_vertex, dest_vertex):
         print("Adding from "+orig_vertex+" to "+dest_vertex)
@@ -161,6 +177,7 @@ class TwitterGraphCreator(object):
         if vertex_inst is None:
             vertex_inst = self.__friends_graph.add_vertex()
             self.__vertex_dict[vertex_name] = vertex_inst
+#             self.__vertices_props[vertex_inst] = vertex_name
         return vertex_inst
         
     def __getOrigVertex(self, neighbor_list):
@@ -169,3 +186,7 @@ class TwitterGraphCreator(object):
     def __getDestVertexList(self, neighbor_list):
         dest_vertices = neighbor_list.split(sep=TwitterGraphCreator.__ADJ_LIST_ORIG_DELIMITER)[TwitterGraphCreator.__DEST_VERTEX_LIST]
         return dest_vertices.split(sep=TwitterGraphCreator.__ADJ_LIST_DEST_DELIMITER)
+    
+    def writeGraphToFile(self, file_name, graph_size):
+#         self.__friends_graph.vertex_properties[TwitterGraphCreator.__VERTEX_PROPERTY_NAME] = self.__vertices_props
+        graph_draw(self.__friends_graph, vertex_text=self.__friends_graph.vertex_index, vertex_font_size=12, output_size=(graph_size, graph_size), output=file_name)

@@ -8,6 +8,8 @@ from tweetplot.twitter_account import TwitterAccount
 from tweetplot.twitter_account import TwitterAuthParams
 from tweetplot.twitter_account import TwitterGraphCreator
 import logging
+import traceback
+import time
 
 _CONFIG_FILE_NAME = "twitterAuthInformation.ini"
 
@@ -19,40 +21,46 @@ if __name__ == '__main__':
 
     try:
         
-#         list1 = "js=nadim,valentine"
+#         list1 = "js=nadim,valentine,benj,bryan,steph,nicolas,antoine,anne-marie,croquette"
 #         list2 = "nadim=valentine"
 #         list3 = "valentine=nadim,js"
-#         
-#         adj_list = [list1,list2,list3]
-#         
-#         graph_creator = TwitterGraphCreator(adj_list)
+#         list4 = "steph=js,max,bryan"
+#         list5 = "bryan=js,steph,valentine,nadim,benj"
+#         list6 = "vincent=nicolas,antoine,anne-marie,croquette,js"
+#         list7 = "nicolas=antoine,anne-marie,croquette,js,vincent"
+#          
+#         adjacency_list = [list1,list2,list3]
+         
         
         twitter_auth_params = TwitterAuthParams(_CONFIG_FILE_NAME)
         twitter_account = TwitterAccount(twitter_auth_params)
         auth_user_id = twitter_account.getAuthenticatedUserId()
         neighbors_list = twitter_account.getListOfFriendsFromId(user_id=auth_user_id)
- 
+  
         print("There are '"+str(len(neighbors_list))+"' direct neighbors that were collected from user ID '"+str(auth_user_id)+"'.")
         print("Creating the adjacency list of the graph")
-         
-        adj_list_file = open('neighbor_list.dat', 'w+')
+          
+        time_milli = int(round(time.time() * 1000))
+        adj_list_file = open("neighbor_list."+str(time_milli)+".dat", 'a')
         adjacency_list = []
- 
+  
         for neighbor_id in neighbors_list:
             print("Current neighbor_id ID '"+str(neighbor_id)+"'")
- 
+  
             neighbors_of_neighbor = twitter_account.getListOfFriendsFromId(user_id=neighbor_id)
-             
+              
             neighbor_list = str(auth_user_id) + "=" + (",".join(str(neighbor) for neighbor in neighbors_of_neighbor)) + "\n"
             print(neighbor_list)
             adjacency_list.append(neighbor_list)
             adj_list_file.write(neighbor_list)
- 
+  
             print("There are '"+str(len(neighbors_of_neighbor))+"' neighbors of neighbors that were added to the adjacency list.")
             
         graph_creator = TwitterGraphCreator(adjacency_list)
+        graph_creator.writeGraphToFile(file_name="neighbor_graph.png", graph_size=1000)
         
     except Exception as exception:
         # TODO: Will potentially need to handle different types of exceptions.
         print("An exception ocured while creating the graph of neighbors.")
         print(exception)
+        print(traceback.format_exc())
