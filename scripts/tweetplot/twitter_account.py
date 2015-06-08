@@ -99,7 +99,7 @@ class TwitterAccount(object):
     '''
     
     __MAX_NUMBER_OF_IDS = 100
-    __MAX_NUMBER_ERRORS = 5
+    __MAX_NUMBER_ERRORS = 100
     
     def __init__(self, twitter_auth_params):
         '''
@@ -130,7 +130,7 @@ class TwitterAccount(object):
                 error_count += 1
                 
                 if error_count == TwitterAccount.__MAX_NUMBER_ERRORS:
-                    print("It's been "+TwitterAccount.__MAX_NUMBER_ERRORS+" times in a row that we were enable to send requests to Twitter. Raising exception.")
+                    print("It's been "+str(TwitterAccount.__MAX_NUMBER_ERRORS)+" times in a row that we were enable to send requests to Twitter. Raising exception.")
                     raise exception
 
         return friends_ids_list
@@ -158,7 +158,7 @@ class TwitterGraphCreator(object):
 #         self.__vertices_props = self.__friends_graph.new_edge_property(TwitterGraphCreator.__VERTEX_PROPERTY_TYPE)
         
         for neighbor_list in adjacency_list:
-            print("Adding: "+neighbor_list)
+            #print("Adding: "+neighbor_list)
             
             orig_vertex = self.__getOrigVertex(neighbor_list)
             dest_vertex_list = self.__getDestVertexList(neighbor_list)
@@ -167,7 +167,7 @@ class TwitterGraphCreator(object):
                 self.__addEdge(orig_vertex, dest_vertex)
         
     def __addEdge(self, orig_vertex, dest_vertex):
-        print("Adding from "+orig_vertex+" to "+dest_vertex)
+        #print("Adding from "+orig_vertex+" to "+dest_vertex)
         orig_vertex_inst = self.__getVertexInstance(orig_vertex)
         dest_vertex_inst = self.__getVertexInstance(dest_vertex)
         self.__friends_graph.add_edge(orig_vertex_inst, dest_vertex_inst)
@@ -188,5 +188,6 @@ class TwitterGraphCreator(object):
         return dest_vertices.split(sep=TwitterGraphCreator.__ADJ_LIST_DEST_DELIMITER)
     
     def writeGraphToFile(self, file_name, graph_size):
+        graph_draw(g=self.__friends_graph, output = file_name, pos = arf_layout(self.__friends_graph, max_iter=0))
 #         self.__friends_graph.vertex_properties[TwitterGraphCreator.__VERTEX_PROPERTY_NAME] = self.__vertices_props
-        graph_draw(self.__friends_graph, vertex_text=self.__friends_graph.vertex_index, vertex_font_size=12, output_size=(graph_size, graph_size), output=file_name)
+#         graph_draw(self.__friends_graph, vertex_text=self.__friends_graph.vertex_index, vertex_font_size=10, output_size=(graph_size, graph_size), output=file_name)

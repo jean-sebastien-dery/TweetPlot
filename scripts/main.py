@@ -36,28 +36,36 @@ if __name__ == '__main__':
         twitter_account = TwitterAccount(twitter_auth_params)
         auth_user_id = twitter_account.getAuthenticatedUserId()
         neighbors_list = twitter_account.getListOfFriendsFromId(user_id=auth_user_id)
-  
+   
         print("There are '"+str(len(neighbors_list))+"' direct neighbors that were collected from user ID '"+str(auth_user_id)+"'.")
         print("Creating the adjacency list of the graph")
-          
+           
         time_milli = int(round(time.time() * 1000))
         adj_list_file = open("neighbor_list."+str(time_milli)+".dat", 'a')
         adjacency_list = []
-  
+   
         for neighbor_id in neighbors_list:
             print("Current neighbor_id ID '"+str(neighbor_id)+"'")
-  
+   
             neighbors_of_neighbor = twitter_account.getListOfFriendsFromId(user_id=neighbor_id)
-              
+               
             neighbor_list = str(auth_user_id) + "=" + (",".join(str(neighbor) for neighbor in neighbors_of_neighbor)) + "\n"
             print(neighbor_list)
             adjacency_list.append(neighbor_list)
             adj_list_file.write(neighbor_list)
-  
+   
             print("There are '"+str(len(neighbors_of_neighbor))+"' neighbors of neighbors that were added to the adjacency list.")
-            
-        graph_creator = TwitterGraphCreator(adjacency_list)
-        graph_creator.writeGraphToFile(file_name="neighbor_graph.png", graph_size=1000)
+
+#         adjacency_list = []
+#         file = open("neighbor_list.1433525485504.dat", "r")
+#         for neighbor_list in file:
+#             adjacency_list.append(neighbor_list)
+#         file.close()
+#         
+#         print("There are "+str(len(adjacency_list))+" direct neighbors that will be added to the graph.")
+#             
+#         graph_creator = TwitterGraphCreator(adjacency_list)
+#         graph_creator.writeGraphToFile(file_name="neighbor_graph.pdf", graph_size=100000)
         
     except Exception as exception:
         # TODO: Will potentially need to handle different types of exceptions.
