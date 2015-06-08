@@ -99,7 +99,7 @@ class TwitterAccount(object):
     '''
     
     __MAX_NUMBER_OF_IDS = 100
-    __MAX_NUMBER_ERRORS = 100
+    __MAX_NUMBER_ERRORS = 10
     
     def __init__(self, twitter_auth_params):
         '''

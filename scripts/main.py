@@ -49,7 +49,7 @@ if __name__ == '__main__':
    
             neighbors_of_neighbor = twitter_account.getListOfFriendsFromId(user_id=neighbor_id)
                
-            neighbor_list = str(auth_user_id) + "=" + (",".join(str(neighbor) for neighbor in neighbors_of_neighbor)) + "\n"
+            neighbor_list = str(neighbor_id) + "=" + (",".join(str(neighbor) for neighbor in neighbors_of_neighbor)) + "\n"
             print(neighbor_list)
             adjacency_list.append(neighbor_list)
             adj_list_file.write(neighbor_list)
