@@ -130,8 +130,10 @@ class TwitterAccount(object):
                 error_count += 1
                 
                 if error_count == TwitterAccount.__MAX_NUMBER_ERRORS:
-                    print("It's been "+str(TwitterAccount.__MAX_NUMBER_ERRORS)+" times in a row that we were enable to send requests to Twitter. Raising exception.")
-                    raise exception
+                    print("Skipping user ID '"+user_id+"' because there were more than "+TwitterAccount.__MAX_NUMBER_ERRORS+" trials to get neighbors.")
+                    return friends_ids_list
+#                     print("It's been "+str(TwitterAccount.__MAX_NUMBER_ERRORS)+" times in a row that we were enable to send requests to Twitter. Raising exception.")
+#                     raise exception
 
         return friends_ids_list
     
