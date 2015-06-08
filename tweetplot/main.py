@@ -4,9 +4,9 @@ Created on May 21, 2015
 @author: Jean-Sebastien Dery
 """
 
-from tweetplot.twitter_account import TwitterAccount
-from tweetplot.twitter_account import TwitterAuthParams
-from tweetplot.twitter_account import TwitterGraphCreator
+from twitter_account import TwitterAccount
+from twitter_account import TwitterAuthParams
+from twitter_account import TwitterGraphCreator
 import logging
 import traceback
 import time
